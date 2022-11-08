@@ -1,34 +1,17 @@
 /************************************************************************
-
-  Test of Pmod NAV (Based on Jim Lindblom's program)
-
-*************************************************************************
-
-  Description: Pmod_NAV
-  All data (accelerometer, gyroscope, magnetometer) are displayed
-  In the serial monitor
-
-  Material
-  1. Arduino Uno
-  2. Pmod NAV (dowload library
-  https://github.com/sparkfun/SparkFun_LSM9DS1_Arduino_Library )
-  Licence Beerware
-
   Wiring
   Module<--------------------> Arduino
   J1 pin 6 (3V3)     to        3V3
   J1 pin 5 (GND)     to        GND
   J1 pin 4 (SCK)     to        A5 (SCL)
   J1 pin 2 (SDI)     to        A4 (SDA)
-
 ************************************************************************/
-
 // The earth's magnetic field varies according to its location.
 // Add or subtract a constant to get the right value
 // of the magnetic field using the following site
 // http://www.ngdc.noaa.gov/geomag-web/#declination
 
-#define DECLINATION -5.55 // declination (in degrees) in Cluj-Napoca (Romania).
+#define DECLINATION 5.1 // declination (in degrees) in Cluj-Napoca (Romania).
 
 /************************************************************************/
 
