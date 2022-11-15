@@ -1,9 +1,9 @@
 from ublox_gps import UbloxGps
 import serial
 import cv2
-import time
 import socket
 import pickle
+from Arduino_methods import *
 import tkinter
 
 
@@ -31,50 +31,54 @@ def exit_program():
     exit()
 
 
+# Set IMU configurations
+available_ports = serial_ports()
+arduino_connection = establish_connection(True, 115200, 'COM11')
+
+
 header_size = 10
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 host = socket.gethostname()
-print(f'Enter "{host}" in the host variable in the client side.')
+print(f'\n\nEnter "{host}" in the host variable in the client side.')
 s.bind((host, 1243))
 s.listen(5)
 
-import Rover_Arduino
-
 
 # https://github.com/sparkfun/Qwiic_Ublox_Gps_Py
-
-rtk_port = serial.Serial('COM6', baudrate=38400, timeout=1)
+rtk_port = serial.Serial('COM8', baudrate=38400, timeout=1)
 rtk = UbloxGps(rtk_port)
 cam_port = 0
 cam = cv2.VideoCapture(cam_port)
 
 
 if __name__ == '__main__':
-    while True:
-        clientsocket, address = s.accept()
-        print(f"Connection from {address} has been established.")
-
-        full_msg = b''
-        new_msg = True
+    if stable_the_ard() != 'bad_data':
         while True:
-            msg = clientsocket.recv(16)
-            if new_msg:
-                msglen = int(msg[:header_size])
-                new_msg = False
+            clientsocket, address = s.accept()
+            print(f"Connection from {address} has been established.")
 
-            full_msg += msg
+            full_msg = b''
+            new_msg = True
+            while True:
+                msg = clientsocket.recv(512)
+                if new_msg:
+                    msglen = int(msg[:header_size])
+                    new_msg = False
 
-            if len(full_msg) - header_size == msglen:
-                data = pickle.loads(full_msg[header_size:])
-                new_msg = True
-                full_msg = b""
+                full_msg += msg
 
-            if new_msg:
-                base_coordinates = get_coordinates(rtk)
-                image = get_frame()
-                time.sleep(0.5)
+                if len(full_msg) - header_size == msglen:
+                    data = pickle.loads(full_msg[header_size:])
+                    new_msg = True
+                    full_msg = b""
 
-                data['image'] = image
-                data['base_GPS'] = base_coordinates
+                if new_msg:
+                    imu_data = get_imu_read()
+                    base_coordinates = get_coordinates(rtk)
+                    image = get_frame()
 
-                print(base_coordinates)
+                    data['image'] = image
+                    data['base_GPS'] = base_coordinates
+                    data['base_IMU'] = imu_data
+
+                    print(base_coordinates)

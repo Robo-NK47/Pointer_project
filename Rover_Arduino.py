@@ -47,19 +47,22 @@ def exit_program():
     exit()
 
 
+arduino_port = 'COM9'
+gps_port = 'COM11'
+host = 'DESKTOP-C60OGE1'
+
 # Set IMU configurations
 # available_ports = serial_ports()
-arduino_connection = establish_connection(True, 115200, 'COM9')
+arduino_connection = establish_connection(True, 115200, arduino_port)
 
 # Set client port for communication with laptop
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-host = 'DESKTOP-C60OGE1'
 s.connect((host, 1243))
 header_size = 10
 
 # Set GPS-RTK configurations
 # https://github.com/sparkfun/Qwiic_Ublox_Gps_Py
-rtk_usb_port = serial.Serial('COM11', baudrate=38400, timeout=1)
+rtk_usb_port = serial.Serial(gps_port, baudrate=38400, timeout=1)
 rtk = UbloxGps(rtk_usb_port)
 
 # Main loop

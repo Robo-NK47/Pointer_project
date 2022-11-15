@@ -90,13 +90,15 @@ def capture_data():
     clientsocket.send(data_to_server)
     data = get_msg()
 
-    print(data)
     imu_data = get_imu_read()
-    print(imu_data)
     base_coordinates = get_coordinates(rtk)
-    print(base_coordinates)
     image = get_frame()
-    print(len(image))
+    print('_______________________________________________________________________________________\n Base:')
+    print(f'    GPS: {base_coordinates}')
+    print(f'    IMU: {imu_data}\nRover:')
+    print(f'    GPS: {data["rover_GPS"]}')
+    print(f'    IMU: {data["rover_IMU"]}')
+    print('_______________________________________________________________________________________\n\n')
 
     data['image'] = image
     data['base_GPS'] = base_coordinates
@@ -176,9 +178,13 @@ def update_shown_data():
 
 
 if __name__ == '__main__':
+    rtk_port_number = 'COM6'
+    arduino_port_number = 'COM11'
+    cam_port = 1
+
     # Set IMU configurations
     # available_ports = serial_ports()
-    arduino_connection = establish_connection(True, 115200, 'COM11')
+    arduino_connection = establish_connection(True, 115200, arduino_port_number)
 
     header_size = 10
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -188,14 +194,17 @@ if __name__ == '__main__':
     sock.listen(5)
 
     # https://github.com/sparkfun/Qwiic_Ublox_Gps_Py
-    rtk_port = serial.Serial('COM8', baudrate=38400, timeout=1)
+    # RTK configuration steps:
+    # https://learn.sparkfun.com/tutorials/setting-up-a-rover-base-rtk-system?_ga=
+    # 2.89726104.2073084179.1668073081-138328781.1660829376#introduction
+
+    rtk_port = serial.Serial(rtk_port_number, baudrate=38400, timeout=1)
     rtk = UbloxGps(rtk_port)
-    cam_port = 0
     cam = cv2.VideoCapture(cam_port)
 
     if stable_the_ard() != 'bad_data':
         clientsocket, address = sock.accept()
-        print(f"Connection from {address} has been established.")
+        print(f"Connection from {address} has been established.\n\n")
 
     data = None
 
@@ -216,13 +225,19 @@ if __name__ == '__main__':
            "  Capture - Obtain data from moving target (GPS-RTK & IMU).\n" \
            "  Save - If the captured data if suitable, save it to a desired folder.\n" \
            "  Exit - Exit the program.\n\n"
-    Label(master, text=text, anchor="n", justify=LEFT, bg=bg_color).grid(row=0, column=1, columnspan=7, rowspan=6)
+    Label(master, text=text, anchor="n", justify=LEFT, bg=bg_color).grid(row=0, column=3, columnspan=3, rowspan=6)
 
-    img = Image.open(r'C:\Users\kahan\PycharmProjects\GPS_RTK\ROBTAU.png')
+    img = Image.open(r'C:\Users\kahan\PycharmProjects\GPS_RTK\StartImage.png')
     img = img.resize((int(0.6 * 640), int(0.6 * 480)))
     img = ImageTk.PhotoImage(img)
     panel = Label(master, image=img, anchor="e", justify=LEFT, bg=bg_color)
-    panel.grid(row=1, column=0, columnspan=1)
+    panel.grid(row=1, column=0, columnspan=3)
+
+    img2 = Image.open(r'C:\Users\kahan\PycharmProjects\GPS_RTK\ROBTAU.png')
+    img2 = img2.resize((int(0.3 * 640), int(0.3 * 480)))
+    img2 = ImageTk.PhotoImage(img2)
+    panel2 = Label(master, image=img2, anchor="e", justify=LEFT, bg=bg_color)
+    panel2.grid(row=1, column=7, columnspan=1)
     #################################################################################################################
     tab_text = "___________________________________________________________________________________________________" \
                "___________________________________________________________________________________________________" \
